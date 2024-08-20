@@ -1,13 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const connectDatabase = () => {
-  mongoose.connect("mongodb://localhost:27017/Ecommerce")
-    .then((data) => {
-      console.log(`MongoDB connected with server: ${data.connection.host}`);
-    })
-    .catch((err) => {
-      console.error("MongoDB connection error:", err);
-    });
-};
+  const connectDatabase = ()=>{
+    return mongoose.connect('mongodb+srv://samiullahglotar420:malikecomerceappsami@ecommerce.jkzlt.mongodb.net/')
+      .then(() => console.log('Connected to MongoDB Atlas'))
+      .catch((err) => console.error('MongoDB Atlas connection error:', err));
+  }
 
 module.exports = connectDatabase;
