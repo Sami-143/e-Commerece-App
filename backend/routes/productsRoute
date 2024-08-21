@@ -1,8 +1,10 @@
 const express = require("express");
-const { getAllProducts } = require("../controllers/ProductController");
+const { getAllProducts,createProucts } = require("../controllers/productController");
 
 const router = express.Router(); // Correctly create a router instance
 
-router.get("/products", getAllProducts); // Define the route
+router.route("/products").get(getAllProducts); // Define the route
+router.route("/product/new").post(createProucts);//Create A Product Route
+router.route("/product/update").put(updateProduct);
 
 module.exports = router; // Export the router
