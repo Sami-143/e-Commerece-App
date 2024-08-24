@@ -1,8 +1,10 @@
 const Product = require("../model/productModel");
 const ErrorHandler = require("../utils/errorHandler");
 const catchAsyncError = require("../middleware/catchAsyncError");
-
 const mongoose = require("mongoose");
+const ApiFeature = require("../utils/apifeatures");
+const { request } = require("express");
+
 
 //Create A Product ---Admin Pannel
 exports.createProucts = catchAsyncError(async (req, res, next) => {
@@ -17,6 +19,7 @@ exports.createProucts = catchAsyncError(async (req, res, next) => {
 //Getting the Products -- 
 exports.getAllProducts = catchAsyncError(async (req, res) => {
     const products = await Product.find();
+    const ApiFeature = ApiFeature(Product.find(),request.query);//query is here the keyword we are going to search
     res.status(200).json({
         success: true,
         products
