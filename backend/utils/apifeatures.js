@@ -12,9 +12,11 @@ class ApiFeature{
         const keyword = this.queryStr.keyword ? {
             name:{
                 $regex : this.queryStr.keyword,
-                $options : "i"
-            },
+                $option : "i"
+            }
         } : {}
+
+        this.quet
    }
 }
 
