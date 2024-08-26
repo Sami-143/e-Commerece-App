@@ -16,7 +16,8 @@ class ApiFeature{
             }
         } : {}
 
-        this.quet
+        this.query = this.query.find(...keyword);
+        return this;
    }
 }
 
