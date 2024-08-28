@@ -25,6 +25,10 @@ class ApiFeature{
    addfeature(){
     
    }
+
+   addingMoreFeature(){
+    
+   }
 }
 
 module.exports = ApiFeature;
