@@ -22,17 +22,7 @@ class ApiFeature{
 
    //Now adding the next feature in the code 
 
-   addfeature(){
-    
-   }
-
-   addingMoreFeature(){
-    
-   }
-
-   addOneMoreFeature(){
-    
-   }
+   
 }
 
 module.exports = ApiFeature;
