@@ -1,6 +1,6 @@
 //Now we are adding the functionalities in our website and also adding the seach functionalites and the pagination and sorting by the price 
 
-class ApiFeature{
+class ApiFeatures{
     constructor(query,queryStr){
         this.query = query;
         this.queryStr = queryStr
@@ -8,22 +8,37 @@ class ApiFeature{
 
    //Adding the search feature in the website
    
-   seach(){
+   search() {
         const keyword = this.queryStr.keyword ? {
-            name:{
-                $regex : this.queryStr.keyword,
-                $option : "i"
+         name: {
+             $regex: this.queryStr.keyword,
+             $options: "i" 
             }
-        } : {}
+         } : {}
+         this.query = this.query.find(keyword);
+         return this;
+    }
+    
 
-        this.query = this.query.find(...keyword);
+    filter() {
+        const queryCopy = { ...this.queryStr };
+        const removeFields = ["keyword", "page", "limit"];
+        removeFields.forEach(key => delete queryCopy[key]);
+    
+        console.log(queryCopy);
+    
+        let queryStr = JSON.stringify(queryCopy);
+        queryStr = queryStr.replace(/\b(gt|gte|lt|lte|ge|le)\b/g, key => `$${key}`);
+        this.query = this.query.find(JSON.parse(queryStr));
+        console.log(queryStr);
+    
         return this;
-   }
+    }
+    
+    
 
-   //Now adding the next feature in the code 
 
 
-   
 }
 
-module.exports = ApiFeature;
+module.exports = ApiFeatures;
