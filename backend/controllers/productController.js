@@ -3,6 +3,7 @@ const ErrorHandler = require("../utils/errorHandler");
 const catchAsyncError = require("../middleware/catchAsyncError");
 const mongoose = require("mongoose");
 const ApiFeatures = require("../utils/apifeatures");
+const productModel = require("../model/productModel");
 
 
 //Create A Product ---Admin Pannel
@@ -15,13 +16,23 @@ exports.createProucts = catchAsyncError(async (req, res, next) => {
     })
 });
 
-//Getting the Products -- 
+//Getting the Products --
+
 exports.getAllProducts = catchAsyncError(async (req, res) => {
-    const apiFeature = new ApiFeatures(Product.find(), req.query).search().filter();
+
+    const resultPerPage = 5;
+    const productCount = await Product.countDocuments();//will use for the Frontend
+
+    const apiFeature = new ApiFeatures(Product.find(), req.query)
+    .search()
+    .filter()
+    .pagination(resultPerPage);
+    
     const products = await apiFeature.query;
     res.status(200).json({
       success: true,
-      products
+      products,
+      productCount
     })
   });
 
