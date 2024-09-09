@@ -3,7 +3,6 @@ const ErrorHandler = require("../utils/errorHandler");
 const catchAsyncError = require("../middleware/catchAsyncError");
 const mongoose = require("mongoose");
 const ApiFeatures = require("../utils/apifeatures");
-const productModel = require("../model/productModel");
 
 
 //Create A Product ---Admin Pannel
