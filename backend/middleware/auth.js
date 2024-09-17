@@ -21,3 +21,15 @@ exports.isAuthenticatedUser = catchAsyncError(async (req, res, next) => {
         return next(new ErrorHandler("Invalid or expired token, please login again", 401));
     }
 });
+
+
+exports.authorizedRoles = (...roles)=>{
+    return (req,res,next)=>{
+        if(!roles.includes(req.user.role)){
+            return next(new ErrorHandler(
+                `Role : ${req.user.role} is not allowed to use this resource`,403
+            ))
+        }
+        next()
+    }
+}
