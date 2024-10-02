@@ -2,6 +2,7 @@ const ErrorHandler = require("../utils/errorHandler");
 const catchAsyncError = require("../middleware/catchAsyncError");
 const User = require("../model/userModel");
 const sendToken = require("../utils/jwtToken");
+const sendEmail = require("../utils/sendEmail");
 
 //Register a User
 
@@ -43,6 +44,7 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
     sendToken(user,200,res);
 });
 
+// logout user 
 exports.logout = catchAsyncError(async (req,res,next) => {
 
     res.cookie("token",null,{
@@ -53,4 +55,40 @@ exports.logout = catchAsyncError(async (req,res,next) => {
         sucess:true,
         message:"Logged Out"
     })
+});
+
+
+//Forgot Password
+
+exports.forgotPassword = catchAsyncError(async (req, res, next) => {
+    const user = await User .findOne({email:req.body.email});
+    if(!user){
+        return next(new ErrorHandler("User not found with this email",404));
+    }
+
+    const resetToken = user.getResetPasswordToken();
+    await user.save({validateBeforeSave:false});// validateBeforeSave:false is used to avoid the validation of the fields before saving the data
+
+    //Create reset password URL
+    const resetUrl = `${req.protocol}://${req.get("host")}/password/reset/${resetToken}`;
+    const message = `Your password reset token is as follows:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`;
+
+    try {
+        await sendEmail({
+            email:user.email,
+            subject: "Ecommerce Password Recovery",
+            message
+        })
+
+        res.status(200).json({
+            success:true,
+            message:`Email sent to: ${user.email}`
+        })
+        
+    } catch (error) {
+        user.resetPasswordToken = undefined;//if there is any error then reset the resetPasswordToken field to undefined
+        user.resetPasswordExpire = undefined;//if there is any error then reset the resetPasswordExpire field to undefined
+        await user.save({validateBeforeSave:false});//if there is any error then save the user data with validateBeforeSave:false
+        return next(new ErrorHandler(error.message,500));
+    }
 });
