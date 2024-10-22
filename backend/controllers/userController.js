@@ -76,7 +76,7 @@ exports.forgotPassword = catchAsyncError(async (req, res, next) => {
 
     try {
         await sendEmail({
-            email: 'samimalik988@gmail.com',
+            email: user.email,
             subject: "Ecommerce Password Recovery",
             message: message
         });
@@ -121,4 +121,78 @@ exports.resetPassword = catchAsyncError(async (req, res, next) => {
     await user.save();
 
     sendToken(user, 200, res);
+});
+
+//get User Details
+
+exports.getUserDetails = catchAsyncError(async (req, res, next) => {
+    const user = await User.findById(req.user.id);
+    res.status(200).json({
+        success: true,
+        user
+    });
+
+})
+
+
+exports.updatePassword = catchAsyncError(async (req, res, next) => {
+    const user = await User.findById(req.user.id).select("+password");
+
+    const isPasswordMatched = await user.comparePassword(req.body.oldPassword);
+    if (!isPasswordMatched) {
+        return next(new ErrorHandler("Old Password is incorrect", 400));
+    }
+
+    if (req.body.newPassword !== req.body.confirmPassword) {
+        return next(new ErrorHandler("Password does not match", 400));
+    }
+
+    user.password = req.body.newPassword;
+    await user.save();
+    sendToken(user, 200, res);
+
+});
+
+//update user profile
+
+exports.updateProfile = catchAsyncError(async (req, res, next) => {
+    const newUserData = {
+        name : req.body.name,
+        email : req.body.email,
+    }
+
+    const user = await User.findByIdAndUpdate(req.user.id, newUserData, {
+        new : true,
+        runValidators : true,
+        useFindAndModify : false
+    });
+
+    res.status(200).json({
+        success : true
+    });
+
+});
+
+
+//Admin Routes
+
+//Get all users
+exports.getAllUsers  = catchAsyncError(async(req,res,next) => {
+    const users = await User.find();
+    res.status(200).json({
+        success : true,
+        users
+    });
+})
+
+//Get Single User Details
+exports.getSingleUserAdmin = catchAsyncError(async(req,res,next) => {
+    const user = await User.findById(req.params.id);
+    if(!user){
+        return next(new ErrorHandler(`User does not found with id ${req.params.id}`));
+    }
+    res.status(200).json({
+        success : true,
+        user
+    })
 });

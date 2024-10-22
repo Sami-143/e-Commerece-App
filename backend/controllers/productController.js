@@ -9,7 +9,7 @@ const ApiFeatures = require("../utils/apifeatures");
 exports.createProucts = catchAsyncError(async (req, res, next) => {
 
     req.user.body = req.user.id;
-    
+
     const product = await Product.create(req.body);
     res.status(200).json({
         success: true,
@@ -26,17 +26,17 @@ exports.getAllProducts = catchAsyncError(async (req, res) => {
     const productCount = await Product.countDocuments();//will use for the Frontend
 
     const apiFeature = new ApiFeatures(Product.find(), req.query)
-    .search()
-    .filter()
-    .pagination(resultPerPage);
-    
+        .search()
+        .filter()
+        .pagination(resultPerPage);
+
     const products = await apiFeature.query;
     res.status(200).json({
-      success: true,
-      products,
-      productCount
+        success: true,
+        products,
+        productCount
     })
-  });
+});
 
 //Getting A Product
 exports.gettingProductDetails = catchAsyncError(async (req, res, next) => {
@@ -83,7 +83,6 @@ exports.deleteProduct = catchAsyncError(async (req, res, next) => {
     }
 
     await product.deleteOne();
-
     res.status(200).json({
         success: true,
         message: "Product Deleted Successfully"
