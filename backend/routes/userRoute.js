@@ -41,4 +41,5 @@ router.
     .put(isAuthenticatedUser, authorizedRoles('admin'), updateUserAdmin)
     .delete(isAuthenticatedUser, authorizedRoles('admin'), deleteUserAdmin);
 
+
 module.exports = router;
