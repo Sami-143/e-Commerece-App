@@ -15,7 +15,9 @@ exports.isAuthenticatedUser = catchAsyncError(async (req, res, next) => {
         const decodedData = jwt.verify(token, process.env.JWT_SECRET);
 
         req.user = await User.findById(decodedData.id);
-
+        
+        console.log("Authenticated User Role:", req.user.role); // Debug line
+        
         next();
     } catch (error) {
         return next(new ErrorHandler("Invalid or expired token, please login again", 401));
@@ -23,13 +25,13 @@ exports.isAuthenticatedUser = catchAsyncError(async (req, res, next) => {
 });
 
 
-exports.authorizedRoles = (...roles)=>{
-    return (req,res,next)=>{
-        if(!roles.includes(req.user.role)){
+exports.authorizedRoles = (...roles) => {
+    return (req, res, next) => {
+        if (!roles.includes(req.user.role)) {
             return next(new ErrorHandler(
-                `Role : ${req.user.role} is not allowed to use this resource`,403
-            ))
+                `Role : ${req.user.role} is not allowed to use this resource`, 403
+            ));
         }
-        next()
-    }
-}
+        next();
+    };
+};
