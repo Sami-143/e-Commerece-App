@@ -134,7 +134,7 @@ exports.getUserDetails = catchAsyncError(async (req, res, next) => {
 
 })
 
-// 
+// update password by user
 exports.updatePassword = catchAsyncError(async (req, res, next) => {
     const user = await User.findById(req.user.id).select("+password");
 
@@ -153,8 +153,7 @@ exports.updatePassword = catchAsyncError(async (req, res, next) => {
 
 });
 
-//update user profile
-
+//Update user profile by user
 exports.updateProfile = catchAsyncError(async (req, res, next) => {
     const newUserData = {
         name : req.body.name,
@@ -176,7 +175,7 @@ exports.updateProfile = catchAsyncError(async (req, res, next) => {
 
 //Admin Routes
 
-//Get all users
+//Get all users --Admin
 exports.getAllUsers  = catchAsyncError(async(req,res,next) => {
     const users = await User.find();
     res.status(200).json({
@@ -185,7 +184,7 @@ exports.getAllUsers  = catchAsyncError(async(req,res,next) => {
     });
 })
 
-//Get Single User Details
+//Get Single User Details --Admin
 exports.getSingleUserAdmin = catchAsyncError(async(req,res,next) => {
     const user = await User.findById(req.params.id);
     if(!user){
@@ -198,7 +197,7 @@ exports.getSingleUserAdmin = catchAsyncError(async(req,res,next) => {
 });
 
 
-// Update User Profile by Admin
+// Update User Profile by --Admin
 exports.updateUserAdmin = catchAsyncError(async(req,res,next) => {
     const newUserData = {
         name : req.body.name,
@@ -219,13 +218,13 @@ exports.updateUserAdmin = catchAsyncError(async(req,res,next) => {
 });
 
 
-//Delete User
+//Delete User by --Admin
 exports.deleteUserAdmin = catchAsyncError(async(req,res,next) => {
     const user = await User.findById(req.params.id);
     if(!user){
         return next(new ErrorHandler(`User does not found with id ${req.params.id}`));
     }
-
+    
     //Remove Avatar from cloudinary - todo
 
     await user.remove();
