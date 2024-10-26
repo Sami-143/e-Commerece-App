@@ -71,7 +71,7 @@ exports.forgotPassword = catchAsyncError(async (req, res, next) => {
     await user.save({ validateBeforeSave: false });// validateBeforeSave:false is used to avoid the validation of the fields before saving the data
 
     //Create reset password URL
-    const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/password/reset/${resetToken}`;
+    const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/password/reset/${resetToken}`;// re
     const message = `Your password reset token is as follows:\n\n${resetUrl}\n\nIf you have not requested this email, then ignore it.`;
 
     try {
@@ -218,17 +218,22 @@ exports.updateUserAdmin = catchAsyncError(async(req,res,next) => {
 });
 
 
-//Delete User by --Admin
-exports.deleteUserAdmin = catchAsyncError(async(req,res,next) => {
+// Delete User by --Admin
+exports.deleteUserAdmin = catchAsyncError(async (req, res, next) => {
     const user = await User.findById(req.params.id);
-    if(!user){
-        return next(new ErrorHandler(`User does not found with id ${req.params.id}`));
-    }
-    
-    //Remove Avatar from cloudinary - todo
 
+    // Check if the user exists
+    if (!user) {
+        return next(new ErrorHandler("User not found", 404)); // Return a 'User not found' error with a 404 status code
+    }
+
+    // Delete the user if found
     await user.remove();
+
+    // Send success response after deletion
     res.status(200).json({
-        success : true
-    })
+        success: true,
+        message: "User has been deleted successfully"
+    });
 });
+
