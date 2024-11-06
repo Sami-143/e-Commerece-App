@@ -228,7 +228,7 @@ exports.deleteUserAdmin = catchAsyncError(async (req, res, next) => {
     }
 
     // Delete the user if found
-    await user.remove();
+    await user.deleteOne();
 
     // Send success response after deletion
     res.status(200).json({

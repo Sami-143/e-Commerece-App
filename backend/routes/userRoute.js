@@ -1,6 +1,7 @@
-const express = require('express')
-const { registerUser,
-    loginUser,
+const express = require('express');
+const { 
+    registerUser,
+    loginUser, // Consider renaming to `login`
     logout,
     forgotPassword,
     resetPassword,
@@ -10,36 +11,27 @@ const { registerUser,
     getAllUsers,
     getSingleUserAdmin,
     updateUserAdmin,
-    deleteUserAdmin }
-    = require('../controllers/userController.js')
+    deleteUserAdmin 
+} = require('../controllers/userController.js');
 
-const { isAuthenticatedUser, authorizedRoles } = require('../middleware/auth')
+const { isAuthenticatedUser, authorizedRoles } = require('../middleware/auth');
 
-const router = express.Router()
+const router = express.Router();
 
 router.route('/register').post(registerUser);
-
-router.route('/loginUser').post(loginUser);
-
+router.route('/login').post(loginUser); // Renamed route for clarity
 router.route('/password/forgot').post(forgotPassword);
-
 router.route('/password/reset/:token').put(resetPassword);
-
 router.route('/logout').get(logout);
-
 router.route('/me').get(isAuthenticatedUser, getUserDetails);
-
 router.route('/password/update').put(isAuthenticatedUser, updatePassword);
-
 router.route('/me/update').put(isAuthenticatedUser, updateProfile);
-
 router.route('/admin/users').get(isAuthenticatedUser, authorizedRoles('admin'), getAllUsers);
 
-router.
-    route('/admin/user/:id')
+router
+    .route('/admin/user/:id')
     .get(isAuthenticatedUser, authorizedRoles('admin'), getSingleUserAdmin)
     .put(isAuthenticatedUser, authorizedRoles('admin'), updateUserAdmin)
     .delete(isAuthenticatedUser, authorizedRoles('admin'), deleteUserAdmin);
-
 
 module.exports = router;
