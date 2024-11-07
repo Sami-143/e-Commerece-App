@@ -6,16 +6,15 @@ const ApiFeatures = require("../utils/apifeatures");
 
 
 //Create A Product ---Admin Pannel
-exports.createProucts = catchAsyncError(async (req, res, next) => {
-
-    req.user.body = req.user.id;
+exports.createProducts = catchAsyncError(async (req, res, next) => {
+    // Set the user field in req.body to the authenticated user's ID
+    req.body.user = req.user.id;
 
     const product = await Product.create(req.body);
     res.status(200).json({
         success: true,
         product
-
-    })
+    });
 });
 
 //Getting the Products --
@@ -90,9 +89,7 @@ exports.deleteProduct = catchAsyncError(async (req, res, next) => {
 });
 
 // Create New Review
-
 exports.createProductReview = catchAsyncError(async (req, res, next) => {
-
     const { rating, comment, productId } = req.body;
 
     const review = {
@@ -100,28 +97,44 @@ exports.createProductReview = catchAsyncError(async (req, res, next) => {
         name: req.user.name,
         rating: Number(rating),
         comment
-    }
+    };
 
+    // Fetch the product by ID
     const product = await Product.findById(productId);
-    const isReviewed = product.reviews.find(review => review.user.toString() === req.user._id.toString());
 
-    if(!isReviewed){
-       product.reviews.forEach(review => {
-           if(review.user.toString() === req.user._id.toString()){
-               review.comment = comment;
-               review.rating = rating;
-           }
-       });
+    // Check if the product exists
+    if (!product) {
+        return next(new ErrorHandler("Product not found", 404));
     }
-    else{
+
+    // Check if the user has already reviewed this product
+    const isReviewed = product.reviews.find(
+        (rev) => rev.user.toString() === req.user._id.toString()
+    );
+
+    // Update the review if already exists
+    if (isReviewed) {
+        product.reviews.forEach((rev) => {
+            if (rev.user.toString() === req.user._id.toString()) {
+                rev.comment = comment;
+                rev.rating = rating;
+            }
+        });
+    } else {
+        // Add new review
         product.reviews.push(review);
         product.numOfReviews = product.reviews.length;
     }
 
+    // Calculate the average rating
     let avg = 0;
-    product.ratings = product.reviews.forEach(review => {
-        avg+= review.rating
-    }) / product.reviews.length;
+    product.ratings =
+        product.reviews.reduce((acc, rev) => acc + rev.rating, 0) /
+        product.reviews.length;
 
-    await product.save({validateBeforeSave : false});
+    await product.save({ validateBeforeSave: false });
+
+    res.status(200).json({
+        success: true,
+    });
 });

@@ -11,7 +11,7 @@ const {
     getAllUsers,
     getSingleUserAdmin,
     updateUserAdmin,
-    deleteUserAdmin 
+    deleteUserAdmin
 } = require('../controllers/userController.js');
 
 const { isAuthenticatedUser, authorizedRoles } = require('../middleware/auth');
