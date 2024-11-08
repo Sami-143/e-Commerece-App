@@ -99,20 +99,16 @@ exports.createProductReview = catchAsyncError(async (req, res, next) => {
         comment
     };
 
-    // Fetch the product by ID
-    const product = await Product.findById(productId);
 
-    // Check if the product exists
+    const product = await Product.findById(productId);
     if (!product) {
         return next(new ErrorHandler("Product not found", 404));
     }
 
-    // Check if the user has already reviewed this product
     const isReviewed = product.reviews.find(
         (rev) => rev.user.toString() === req.user._id.toString()
     );
 
-    // Update the review if already exists
     if (isReviewed) {
         product.reviews.forEach((rev) => {
             if (rev.user.toString() === req.user._id.toString()) {
@@ -121,12 +117,10 @@ exports.createProductReview = catchAsyncError(async (req, res, next) => {
             }
         });
     } else {
-        // Add new review
         product.reviews.push(review);
         product.numOfReviews = product.reviews.length;
     }
 
-    // Calculate the average rating
     let avg = 0;
     product.ratings =
         product.reviews.reduce((acc, rev) => acc + rev.rating, 0) /
