@@ -45,7 +45,7 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
-    reviews: [  // Changed from `review` to `reviews`
+    reviews: [
         {
             user: {
                 type: mongoose.Schema.ObjectId,
