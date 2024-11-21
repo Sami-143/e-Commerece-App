@@ -13,11 +13,7 @@ exports.isAuthenticatedUser = catchAsyncError(async (req, res, next) => {
 
     try {
         const decodedData = jwt.verify(token, process.env.JWT_SECRET);
-
         req.user = await User.findById(decodedData.id);
-        
-        console.log("Authenticated User Role:", req.user.role); // Debug line
-        
         next();
     } catch (error) {
         return next(new ErrorHandler("Invalid or expired token, please login again", 401));
