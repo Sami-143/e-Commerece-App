@@ -1,22 +1,19 @@
-/* App.css */
 .App {
     display: flex;
     flex-direction: column;
-    min-height: 100vh; /* Ensure the app takes up the full height of the viewport */
+    min-height: 100vh;
   }
   
-  /* This is for the content area between the header and footer */
   .content {
-    flex-grow: 1; /* Ensures the content takes up the available space */
-    padding: 20px; /* Optional: Add padding around the content */
+    flex-grow: 1; 
+    padding: 20px; 
   }
   
-  /* Optional: You can also style the header and footer as needed */
   header {
     margin-bottom: 20px;
   }
   
   footer {
-    margin-top: auto; /* Push the footer to the bottom if content is smaller */
+    margin-top: auto;
   }
   
