@@ -4,7 +4,9 @@
   "description": "this is my mern project",
   "main": "backend/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node backend/server.js",
+    "dev": "nodemon backend/server.js"
   },
   "author": "Sami Malik",
   "license": "ISC",
@@ -19,6 +21,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.2",
     "nodemailer": "^6.9.16",
+    "nodemon": "^3.1.7",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "stripe": "^17.4.0",
