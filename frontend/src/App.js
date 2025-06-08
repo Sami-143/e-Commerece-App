@@ -1,32 +1,27 @@
-import './App.css';
-import Header from './Component/layout/Header/Header.js';
-import Footer from './Component/layout/Footer/Footer.js';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import WebFont from "webfontloader";
 import React from 'react';
-import Home from './Component/Home/Home.js';
+import AppRoutes from './Routes/AppRoutes';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css'; // import styles
 
-function App() {
 
-  React.useEffect(() => {
-    WebFont.load({
-      google: {
-        families: ["Roboto", "Droid Sans", "Chilanka"],
-      },
-    });
-  }, []);
 
+const App = () => {
   return (
-    <Router>
-      <div className="App">
-        <Routes>
-          <Route exact path="/" element={<Home />} />
-        </Routes>
-        <Header />
-        <Footer />
-      </div>
-    </Router>
-  );
+    <>
+      <AppRoutes />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+    </>
+  )
 }
 
 export default App;
