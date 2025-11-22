@@ -1,18 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import { useDispatch, useSelector } from 'react-redux';
+import { loginUser } from '../../Redux/authSlice'; // update path if needed
 import 'react-toastify/dist/ReactToastify.css';
-import Login from '../../assets/Login.jpg'
+import Login from '../../assets/Login.jpg';
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(prev => !prev);
-  };
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { user, loading } = useSelector((state) => state.auth);
 
   const handleSignIn = (e) => {
     e.preventDefault();
@@ -27,14 +30,14 @@ const SignIn = () => {
       return;
     }
 
-    // Simulate login success/failure (replace with real API later)
-    if (email === "user@example.com" && password === "password123") {
-      toast.success('Login successful!');
-      // Example: Redirect manually or with window.location.href
-    } else {
-      toast.error('Login failed. Check your credentials.');
-    }
+    dispatch(loginUser({ email, password }));
   };
+
+  useEffect(() => {
+    if (user) {
+      navigate('/'); // redirect to homepage or dashboard
+    }
+  }, [user, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${Login})` }}>
@@ -75,17 +78,25 @@ const SignIn = () => {
               />
               <div
                 className="absolute top-10 right-3 text-xl text-gray-500 cursor-pointer"
-                onClick={togglePasswordVisibility}
+                onClick={() => setShowPassword((prev) => !prev)}
               >
                 {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
+              </div>
+
+              {/* Forgot Password Link */}
+              <div className="mt-2 text-right">
+                <Link to="/send-email" className="text-sm text-blue-600 hover:underline">
+                  Forgot Password?
+                </Link>
               </div>
             </div>
 
             <button
               type="submit"
               className="w-full bg-gray-600 text-white py-3 rounded-lg hover:bg-gray-700 transition duration-300"
+              disabled={loading}
             >
-              Sign In
+              {loading ? 'Signing In...' : 'Sign In'}
             </button>
           </form>
 

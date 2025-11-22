@@ -14,8 +14,8 @@ const AppRoutes = () => {
             <Routes>
                 <Route path="/" element={<LandingRoutes />} />
                 <Route path="/signup" element={<SignUp />} />
-                <Route path="/signin" element={<SignIn />} />
-                <Route path="/otp-verify" element={<OTPVerification />} />
+                <Route path="/login" element={<SignIn />} />
+                <Route path="/otp-verification" element={<OTPVerification />} />
                 <Route path="/update-password" element={<UpdatePassword />} />
                 <Route path="/send-email" element={<SendEmail />} />
                 <Route path="/reset-password" element={<ResetPassword />} />

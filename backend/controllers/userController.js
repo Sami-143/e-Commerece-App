@@ -7,24 +7,24 @@ const crypto = require('crypto');
 
 //Register a User
 
-exports.registerUser = catchAsyncError(async (req, res, next) => {
-    const { name, email, password } = req.body;
+exports.registerUser = async (req, res) => {
+  console.log("Incoming data:", req.body);
 
-    const user = await User.create({
-        name, email, password,
-        avatars: {
-            public_id: "This is sample image",
-            url: "sampleImageUrl"
-        }
-    });
+  const { name, email, password } = req.body;
 
-    const token = user.getJWTToken();
+  if (!name || !email || !password) {
+    return res.status(400).json({ success: false, message: "All fields are required" });
+  }
 
-    res.status(201).json({
-        success: true,
-        token
-    })
-})
+  try {
+    const user = await User.create({ name, email, password });
+
+    res.status(201).json({ success: true, user });
+  } catch (error) {
+    console.error("Register Error:", error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
 
 exports.loginUser = catchAsyncError(async (req, res, next) => {
     const { email, password } = req.body;
@@ -95,7 +95,6 @@ exports.forgotPassword = catchAsyncError(async (req, res, next) => {
 });
 
 //Reset Password
-
 exports.resetPassword = catchAsyncError(async (req, res, next) => {
     //Hash URL Token
     const resetPasswordToken = crypto.createHash('sha256').update(req.params.token).digest('hex');

@@ -4,10 +4,13 @@ import { toast, ToastContainer } from 'react-toastify';
 import { Link, useNavigate } from 'react-router-dom';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from '../../assets/Login.jpg'
+import { useDispatch } from 'react-redux';
+import { registerUser } from '../../Redux/authSlice';
 
 const SignUp = () => {
+  
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
-
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,7 +18,6 @@ const SignUp = () => {
   });
 
   const navigate = useNavigate();
-
   const togglePasswordVisibility = () => {
     setShowPassword(prev => !prev);
   };
@@ -38,10 +40,15 @@ const SignUp = () => {
 
     // Just simulate success
     toast.success('Sign-up form submitted successfully!');
-    setTimeout(() => {
+    dispatch(registerUser(formData))
+    .unwrap()
+    .then(() => {
       navigate('/otp-verification');
-    }, 1500);
+    })
+    .catch(() => {});
   };
+
+  
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${Login})` }}>
@@ -120,7 +127,7 @@ const SignUp = () => {
 
           <p className="text-sm text-center text-gray-600 mt-4">
             Already have an account?{' '}
-            <Link to="/" className="text-blue-600 hover:underline">
+            <Link to="/login" className="text-blue-600 hover:underline">
               Log In
             </Link>
           </p>
