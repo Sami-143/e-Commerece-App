@@ -1,6 +1,7 @@
 const app = require("./app");
 const dotenv = require("dotenv");//simplifies the process of loading environment variables from a '. env' file into Node. js applications, reducing the need for manual configuration.
 const connectDatabase = require("./config/database")
+const nodemailer = require("nodemailer");
 
 //Handling UnCaught Exception
 process.on("uncaughtException",err=>{
@@ -11,9 +12,28 @@ process.on("uncaughtException",err=>{
 
 
 //Configuration
-dotenv.config({path:"backend/config/config.env"});
+dotenv.config({path:"./config/config.env"});
 connectDatabase();
 
+async function testSMTP() {
+    const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+            user: process.env.SMTP_MAIL,
+            pass: process.env.SMTP_PASSWORD,
+        },
+    });
+
+    transporter.verify((error) => {
+        if (error) {
+            console.error("❌ SMTP Connection Failed:", error);
+        } else {
+            console.log("✅ SMTP Connected Successfully");
+        }
+    });
+}
+
+testSMTP();
 
 //Connection Server
 const server = app.listen(process.env.PORT,()=>{

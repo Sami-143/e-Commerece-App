@@ -5,45 +5,138 @@ const sendToken = require("../utils/jwtToken");
 const { sendEmail } = require('../utils/sendEmail');
 const crypto = require('crypto');
 
-//Register a User
+// helper to generate 6-digit OTP
+const generateOTP = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
+// Register a User - create user, save OTP, send email (no token yet)
 exports.registerUser = async (req, res) => {
-  console.log("Incoming data:", req.body);
-
-  const { name, email, password } = req.body;
-
-  if (!name || !email || !password) {
-    return res.status(400).json({ success: false, message: "All fields are required" });
-  }
-
   try {
-    const user = await User.create({ name, email, password });
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
 
-    res.status(201).json({ success: true, user });
+    console.log("Register API Hit:", req.body);
+
+    // prevent duplicate
+    const existing = await User.findOne({ email });
+    if (existing) {
+      return res.status(400).json({ success: false, message: "Email already exists" });
+    }
+
+    const otp = generateOTP();
+    const otpExpire = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+      otp,
+      otpExpire,
+      isVerified: false
+    });
+
+    const message = `Your ShopEasy verification code is: ${otp}\nThis code will expire in 10 minutes.`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Email Verification - Your OTP",
+        message
+      });
+    } catch (emailErr) {
+      // rollback user creation if email fails
+      await user.deleteOne();
+      return res.status(500).json({ success: false, message: "Failed to send OTP email. Try again later." });
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: "OTP sent to email",
+      email: user.email
+    });
   } catch (error) {
     console.error("Register Error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
 
-exports.loginUser = catchAsyncError(async (req, res, next) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return next(new ErrorHandler("Please Enter Email & Password", 400));
-    }
+// Verify OTP -> set isVerified true and return token via sendToken
+exports.verifyOTP = catchAsyncError(async (req, res, next) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) {
+    return next(new ErrorHandler("Email and OTP required", 400));
+  }
 
-    const user = await User.findOne({ email }).select("+password");
-    if (!user) {
-        return next(new ErrorHandler("Invalid Email or Password", 401));
-    }
+  const user = await User.findOne({ email }).select("+password +otp +otpExpire +isVerified");
+  if (!user) return next(new ErrorHandler("Invalid email or OTP", 400));
 
-    const isPasswordMatched = await user.comparePassword(password);
-    if (!isPasswordMatched) {
-        return next(new ErrorHandler("Invalid Email or Password", 401));
-    }
+  if (user.isVerified) {
+    return res.status(200).json({ success: true, message: "User already verified" });
+  }
 
-    sendToken(user, 200, res);
+  if (!user.otp || user.otp !== otp || user.otpExpire < Date.now()) {
+    return next(new ErrorHandler("Invalid or expired OTP", 400));
+  }
+
+  user.isVerified = true;
+  user.otp = undefined;
+  user.otpExpire = undefined;
+  await user.save();
+
+  // send token (sets cookie & returns user/token depending on implementation)
+  sendToken(user, 200, res);
 });
+
+// Resend OTP
+exports.resendOTP = catchAsyncError(async (req, res, next) => {
+  const { email } = req.body;
+  if (!email) return next(new ErrorHandler("Email is required", 400));
+
+  const user = await User.findOne({ email });
+  if (!user) return next(new ErrorHandler("User not found", 404));
+
+  if (user.isVerified) {
+    return res.status(400).json({ success: false, message: "User already verified" });
+  }
+
+  const otp = generateOTP();
+  user.otp = otp;
+  user.otpExpire = Date.now() + 10 * 60 * 1000;
+  await user.save();
+
+  const message = `Your new verification code is: ${otp}\nIt expires in 10 minutes.`;
+  await sendEmail({ email: user.email, subject: "Resent OTP Code", message });
+
+  res.status(200).json({ success: true, message: "OTP resent to email" });
+});
+
+// Login - only allow if user is verified
+exports.loginUser = catchAsyncError(async (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+      return next(new ErrorHandler("Please Enter Email & Password", 400));
+  }
+
+  const user = await User.findOne({ email }).select("+password +isVerified");
+  if (!user) {
+      return next(new ErrorHandler("Invalid Email or Password", 401));
+  }
+
+  if (!user.isVerified) {
+      return next(new ErrorHandler("Email not verified. Please verify your email first.", 401));
+  }
+
+  const isPasswordMatched = await user.comparePassword(password);
+  if (!isPasswordMatched) {
+      return next(new ErrorHandler("Invalid Email or Password", 401));
+  }
+
+  sendToken(user, 200, res);
+});
+
 
 // logout user 
 exports.logout = catchAsyncError(async (req, res, next) => {
@@ -60,7 +153,6 @@ exports.logout = catchAsyncError(async (req, res, next) => {
 
 
 //Forgot Password
-
 exports.forgotPassword = catchAsyncError(async (req, res, next) => {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {

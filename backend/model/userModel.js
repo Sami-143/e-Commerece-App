@@ -41,12 +41,27 @@ const userSchema = new mongoose.Schema({
         default: "user",
     },
 
+    // NEW OTP / verification fields
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+
+    otp: {
+        type: String,
+        default: undefined
+    },
+
+    otpExpire: {
+        type: Date,
+        default: undefined
+    },
+
     resetPasswordToken: String,
     resetPasswordExpire: Date,
-}
-)
-userSchema.pre("save", async function (next) {
+});
 
+userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) {
         return next();
     }
@@ -54,8 +69,7 @@ userSchema.pre("save", async function (next) {
     next();
 });
 
-//Authentication Token
-//jwt.sign(payload, secret, options)
+// Authentication Token
 userSchema.methods.getJWTToken = function () {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE
@@ -67,10 +81,10 @@ userSchema.methods.comparePassword = async function (enteredPassword) {
 }
 
 userSchema.methods.getResetPasswordToken = function () {
-    const resetToken = crypto.randomBytes(20).toString("hex");//generate random token using crypto module //randomBytes() method generates a cryptographically strong pseudo-random data. and toString("hex") converts it to hexadecimal format
-    this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");//create a hash of the token and store it in the resetPasswordToken field and sha256 is used to hash the token and digest("hex") is used to convert it to hexadecimal format
+    const resetToken = crypto.randomBytes(20).toString("hex");
+    this.resetPasswordToken = crypto.createHash("sha256").update(resetToken).digest("hex");
     this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
     return resetToken;
 }
 
-module.exports = mongoose.model("User", userSchema)
+module.exports = mongoose.model("User", userSchema);

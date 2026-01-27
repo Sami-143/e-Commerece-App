@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
-import { loginUser } from '../../Redux/authSlice'; // update path if needed
+import { loginUser } from '../../Redux/authSlice';
 import 'react-toastify/dist/ReactToastify.css';
 import Login from '../../assets/Login.jpg';
 
@@ -15,7 +15,7 @@ const SignIn = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const { user, loading } = useSelector((state) => state.auth);
+  const { loading } = useSelector((state) => state.auth);
 
   const handleSignIn = (e) => {
     e.preventDefault();
@@ -30,14 +30,15 @@ const SignIn = () => {
       return;
     }
 
-    dispatch(loginUser({ email, password }));
+    dispatch(loginUser({ email, password }))
+      .unwrap()
+      .then(() => {
+        navigate('/product');
+      })
+      .catch((err) => {
+        // Error toast is already handled in Redux slice
+      });
   };
-
-  useEffect(() => {
-    if (user) {
-      navigate('/'); // redirect to homepage or dashboard
-    }
-  }, [user, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4" style={{ backgroundImage: `url(${Login})` }}>

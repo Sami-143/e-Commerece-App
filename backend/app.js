@@ -3,13 +3,15 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
-// Add CORS config at the top
+// CORS setup
 app.use(cors({
-  origin: 'http://localhost:3000', // Your React frontend URL
-  credentials: true               // Required to send cookies (JWT)
+  origin: 'http://localhost:3000', 
+  credentials: true 
 }));
 
+// Body parsers
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));  // <-- IMPORTANT
 app.use(cookieParser());
 
 // Import Routes
