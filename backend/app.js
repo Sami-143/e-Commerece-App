@@ -9,20 +9,22 @@ app.use(cors({
   credentials: true 
 }));
 
-// Body parsers
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));  // <-- IMPORTANT
+// Body parsers - increased limit for image uploads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
 // Import Routes
 const product = require("./routes/productsRoute");
 const user = require("./routes/userRoute");
 const order = require("./routes/orderRoute");
+const chat = require("./routes/chatRoute");
 
 // Use Routes
 app.use("/api/v1", product);
 app.use("/api/v1", user);
 app.use("/api/v1", order);
+app.use("/api/v1", chat);
 
 // Error Middleware
 const errorMiddleware = require("./middleware/error");

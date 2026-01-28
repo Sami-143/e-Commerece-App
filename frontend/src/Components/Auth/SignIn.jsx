@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { AiOutlineEye, AiOutlineEyeInvisible } from 'react-icons/ai';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../../Redux/authSlice';
@@ -14,8 +14,13 @@ const SignIn = () => {
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const { loading } = useSelector((state) => state.auth);
+
+  // Get redirect path from query params
+  const searchParams = new URLSearchParams(location.search);
+  const redirect = searchParams.get('redirect') || 'product';
 
   const handleSignIn = (e) => {
     e.preventDefault();
@@ -33,7 +38,7 @@ const SignIn = () => {
     dispatch(loginUser({ email, password }))
       .unwrap()
       .then(() => {
-        navigate('/product');
+        navigate(`/${redirect}`);
       })
       .catch((err) => {
         // Error toast is already handled in Redux slice

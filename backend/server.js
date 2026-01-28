@@ -1,7 +1,10 @@
 const app = require("./app");
-const dotenv = require("dotenv");//simplifies the process of loading environment variables from a '. env' file into Node. js applications, reducing the need for manual configuration.
-const connectDatabase = require("./config/database")
+const dotenv = require("dotenv");
+const connectDatabase = require("./config/database");
 const nodemailer = require("nodemailer");
+const http = require("http");
+const { Server } = require("socket.io");
+const socketHandler = require("./socket/socketHandler");
 
 //Handling UnCaught Exception
 process.on("uncaughtException",err=>{
@@ -35,9 +38,23 @@ async function testSMTP() {
 
 testSMTP();
 
+// Create HTTP server and Socket.IO
+const httpServer = http.createServer(app);
+const io = new Server(httpServer, {
+    cors: {
+        origin: process.env.FRONTEND_URL || "http://localhost:3000",
+        methods: ["GET", "POST"],
+        credentials: true,
+    },
+});
+
+// Initialize socket handlers
+socketHandler(io);
+
 //Connection Server
-const server = app.listen(process.env.PORT,()=>{
-    console.log(`Server is working on http://localhost:${process.env.PORT}`)
+const server = httpServer.listen(process.env.PORT,()=>{
+    console.log(`Server is working on http://localhost:${process.env.PORT}`);
+    console.log(`✅ Socket.IO is ready`);
 });
 
 

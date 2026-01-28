@@ -2,6 +2,23 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as api from '../Api/authApi';
 import { toast } from 'react-toastify';
 
+// Load auth state from localStorage
+const loadAuthState = () => {
+  try {
+    const user = localStorage.getItem('user');
+    const token = localStorage.getItem('token');
+    return {
+      user: user ? JSON.parse(user) : null,
+      token: token || null,
+      isAuthenticated: !!(user && token),
+    };
+  } catch (e) {
+    return { user: null, token: null, isAuthenticated: false };
+  }
+};
+
+const persistedAuth = loadAuthState();
+
 // register -> backend sends OTP (no token)
 export const registerUser = createAsyncThunk(
   'auth/registerUser',
@@ -52,12 +69,43 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// Logout user
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, thunkAPI) => {
+    try {
+      await api.logout();
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      return true;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.response?.data?.message || 'Logout failed');
+    }
+  }
+);
+
+// Get current user (check if still logged in)
+export const loadUser = createAsyncThunk(
+  'auth/loadUser',
+  async (_, thunkAPI) => {
+    try {
+      const res = await api.getMe();
+      return res.data;
+    } catch (err) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      return thunkAPI.rejectWithValue(err.response?.data?.message || 'Not authenticated');
+    }
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: null,
-    token: null,
-    pendingEmail: null, // store email waiting for verification
+    user: persistedAuth.user,
+    token: persistedAuth.token,
+    isAuthenticated: persistedAuth.isAuthenticated,
+    pendingEmail: null,
     loading: false,
     error: null,
   },
@@ -65,8 +113,11 @@ const authSlice = createSlice({
     logoutLocal: (state) => {
       state.user = null;
       state.token = null;
+      state.isAuthenticated = false;
       state.error = null;
       state.pendingEmail = null;
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
     },
     clearError: (state) => {
       state.error = null;
@@ -91,9 +142,15 @@ const authSlice = createSlice({
       .addCase(verifyOtp.pending, (state) => { state.loading = true; })
       .addCase(verifyOtp.fulfilled, (state, action) => {
         state.loading = false;
-        // If backend returns user in body, set it:
-        if (action.payload.user) state.user = action.payload.user;
-        if (action.payload.token) state.token = action.payload.token;
+        if (action.payload.user) {
+          state.user = action.payload.user;
+          localStorage.setItem('user', JSON.stringify(action.payload.user));
+        }
+        if (action.payload.token) {
+          state.token = action.payload.token;
+          localStorage.setItem('token', action.payload.token);
+        }
+        state.isAuthenticated = true;
         state.pendingEmail = null;
         toast.success("OTP verified, logged in");
       })
@@ -119,14 +176,51 @@ const authSlice = createSlice({
       .addCase(loginUser.pending, (state) => { state.loading = true; })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        if (action.payload.user) state.user = action.payload.user;
-        if (action.payload.token) state.token = action.payload.token;
+        if (action.payload.user) {
+          state.user = action.payload.user;
+          localStorage.setItem('user', JSON.stringify(action.payload.user));
+        }
+        if (action.payload.token) {
+          state.token = action.payload.token;
+          localStorage.setItem('token', action.payload.token);
+        }
+        state.isAuthenticated = true;
         toast.success("Login successful");
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
         toast.error(action.payload);
+      })
+
+      // logout
+      .addCase(logoutUser.pending, (state) => { state.loading = true; })
+      .addCase(logoutUser.fulfilled, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
+        toast.success("Logged out successfully");
+      })
+      .addCase(logoutUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        toast.error(action.payload);
+      })
+
+      // load user
+      .addCase(loadUser.pending, (state) => { state.loading = true; })
+      .addCase(loadUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.isAuthenticated = true;
+        localStorage.setItem('user', JSON.stringify(action.payload.user));
+      })
+      .addCase(loadUser.rejected, (state) => {
+        state.loading = false;
+        state.user = null;
+        state.token = null;
+        state.isAuthenticated = false;
       });
   },
 });

@@ -1,154 +1,145 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import ReactStars from "react-rating-stars-component";
-import Navbar from "../Navbar";
-import bgProduct from '../../../assets/shopping-cart.jpeg'; // use same or your own background
+import { FaStar, FaShoppingCart } from "react-icons/fa";
+import { getAllProducts } from "../../../Api/productApi";
+import { useDispatch } from "react-redux";
+import { addToCart } from "../../../Redux/cartSlice";
+import { toast } from "react-toastify";
 
-const defaultProducts = [
-  {
-    name: "Cornflakes",
-    description: "Crispy and delicious cornflakes to start your day.",
-    images:
-      "https://media.istockphoto.com/id/515167475/photo/corn-flakes-with-milk-breakfast.jpg?s=2048x2048&w=is&k=20&c=ZNLdff630mtq2Vd4CDR9Qloo44e9gxBm5XtgMZCVXlA=",
-    price: 5.99,
-    _id: "product1",
-  },
-  {
-    name: "Milk Bottle",
-    description: "Fresh and pure milk for a healthy lifestyle.",
-    images:
-      "https://unblast.com/wp-content/uploads/2021/07/Two-Milk-Bottles-Mockup-1024x922.jpg",
-    price: 2.49,
-    _id: "product2",
-  },
-  {
-    name: "Fruit Basket",
-    description: "A basket of fresh, seasonal fruits for you.",
-    images:
-      "https://thumbs.dreamstime.com/b/fruit-basket-sunlit-garden-containing-peaches-plums-cherries-vibrant-colors-slightly-blurred-background-greenery-333818789.jpg",
-    price: 12.99,
-    _id: "product3",
-  },
-  {
-    name: "Cupcake",
-    description: "Delicious cupcake to satisfy your sweet cravings.",
-    images:
-      "https://www.justsotasty.com/wp-content/uploads/2020/03/Chocolate-Cupcakes-13.jpg",
-    price: 3.49,
-    _id: "product4",
-  },
-];
+const Product = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
 
-const Product = ({ product, products }) => {
-  const productList = products || (!product ? defaultProducts : []);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await getAllProducts('', 1, [0, 100000], '', 0);
+        setProducts(res.data.products.slice(0, 8));
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
-  if (productList.length > 0) {
-    return (
-      <div
-        className="min-h-screen bg-cover bg-center text-white relative"
-        style={{ backgroundImage: `url(${bgProduct})` }}
-      >
-        <Navbar />
-
-        {/* Top Heading */}
-        {/* Top Heading */}
-        <div className="pt-24 pb-8 text-center">
-          <h1 className="text-3xl sm:text-4xl font-bold text-orange-400 tracking-wide">
-            Featured Products
-          </h1>
-          <div className="mt-2 w-24 h-1 bg-orange-500 mx-auto rounded" />
-        </div>
-
-        {/* Grid Content */}
-        <div className="flex items-center justify-center px-4 pb-12 -mt-2">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl">
-            {productList.map((prod) => (
-              <Link
-                key={prod._id}
-                to={`/product/${prod._id}`}
-                className="bg-[#1f1f1f] border-2 border-black rounded-xl overflow-hidden shadow-md hover:scale-105 transition-transform"
-              >
-                <img
-                  src={prod.images}
-                  alt={prod.name}
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-4 text-center">
-                  <h3 className="text-lg font-semibold text-orange-400">
-                    {prod.name}
-                  </h3>
-                  <div className="flex justify-center items-center mt-2">
-                    <ReactStars
-                      edit={false}
-                      color="rgba(255,255,255,0.2)"
-                      activeColor="tomato"
-                      size={20}
-                      value={prod.rating || 4}
-                      isHalf={true}
-                    />
-                    <span className="ml-2 text-sm text-gray-300">(256 Reviews)</span>
-                  </div>
-                  <p className="mt-1 text-xl font-bold text-indigo-400">${prod.price}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-      </div>
-    );
-  }
-
-  // Single Product View (styled simpler)
-  if (product) {
-    return (
-      <div
-        className="min-h-screen bg-cover bg-center text-white relative"
-        style={{ backgroundImage: `url(${bgProduct})` }}
-      >
-        <Navbar />
-        <div className="flex justify-center items-center min-h-screen p-8">
-          <Link
-            className="bg-[#1f1f1f] border-2 border-orange-500 rounded-xl p-4 shadow-lg w-full max-w-sm text-center"
-            to={`/product/${product._id || ""}`}
-          >
-            <img
-              src={product.images || "https://via.placeholder.com/150"}
-              alt={product.name || "Product Image"}
-              className="w-full h-48 object-cover rounded-md"
-            />
-            <h3 className="text-lg font-semibold text-orange-400 mt-2">
-              {product.name || "Unnamed Product"}
-            </h3>
-            <div className="flex justify-center items-center mt-2">
-              <ReactStars
-                edit={false}
-                color="rgba(255,255,255,0.2)"
-                activeColor="tomato"
-                size={25}
-                value={product.rating || 4}
-                isHalf={true}
-              />
-              <span className="ml-2 text-sm text-gray-300">(256 Reviews)</span>
-            </div>
-            <p className="text-xl font-bold text-indigo-400 mt-2">
-              ${product.price || "0.00"}
-            </p>
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const handleAddToCart = (e, product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(addToCart({ ...product, quantity: 1 }));
+    toast.success('Added to cart!');
+  };
 
   return (
-    <div
-      className="min-h-screen bg-cover bg-center text-white flex items-center justify-center"
-      style={{ backgroundImage: `url(${bgProduct})` }}
-    >
-      <Navbar />
-      <div className="text-center text-xl text-gray-200">
-        No product data available
+    <div className="min-h-screen bg-gray-950 text-white py-20 px-4 md:px-8">
+      {/* Section Heading */}
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-white">
+          Our <span className="text-amber-400">Products</span>
+        </h2>
+        <p className="text-gray-400 mt-2">Explore our amazing collection</p>
+        <div className="mt-4 w-24 h-1 bg-amber-500 mx-auto rounded" />
       </div>
+
+      {/* Products Grid */}
+      {loading ? (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="bg-gray-800 rounded-2xl p-4 animate-pulse">
+              <div className="w-full h-48 bg-gray-700 rounded-xl mb-4"></div>
+              <div className="h-4 bg-gray-700 rounded w-3/4 mb-2"></div>
+              <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      ) : products.length === 0 ? (
+        <div className="text-center py-20">
+          <p className="text-gray-400 text-lg">No products available yet.</p>
+          <Link
+            to="/product"
+            className="inline-block mt-4 bg-amber-500 hover:bg-amber-600 text-gray-900 px-6 py-3 rounded-xl font-bold transition"
+          >
+            Browse All Products
+          </Link>
+        </div>
+      ) : (
+        <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <Link
+              key={product._id}
+              to={`/product/${product._id}`}
+              className="group bg-gray-800 border border-gray-700 rounded-2xl overflow-hidden hover:border-amber-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-amber-500/10"
+            >
+              <div className="relative overflow-hidden">
+                <img
+                  src={product.images?.[0]?.url || 'https://via.placeholder.com/300'}
+                  alt={product.name}
+                  className="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                {product.Stock <= 0 && (
+                  <div className="absolute top-3 right-3 bg-red-500 text-white text-xs px-3 py-1 rounded-full">
+                    Out of Stock
+                  </div>
+                )}
+                {product.Stock > 0 && product.Stock <= 5 && (
+                  <div className="absolute top-3 right-3 bg-amber-500 text-gray-900 text-xs px-3 py-1 rounded-full">
+                    Only {product.Stock} left
+                  </div>
+                )}
+              </div>
+
+              <div className="p-4">
+                <h3 className="text-white font-semibold text-lg mb-2 truncate group-hover:text-amber-400 transition">
+                  {product.name}
+                </h3>
+
+                <div className="flex items-center gap-1 mb-3">
+                  {[...Array(5)].map((_, i) => (
+                    <FaStar
+                      key={i}
+                      className={`text-sm ${
+                        i < Math.floor(product.ratings || 0)
+                          ? 'text-amber-400'
+                          : 'text-gray-600'
+                      }`}
+                    />
+                  ))}
+                  <span className="text-gray-400 text-sm ml-1">
+                    ({product.numOfReviews || 0})
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-amber-400 font-bold text-xl">
+                    ${product.price?.toLocaleString()}
+                  </span>
+                  <button
+                    onClick={(e) => handleAddToCart(e, product)}
+                    disabled={product.Stock <= 0}
+                    className="p-2 bg-amber-500 hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed text-gray-900 rounded-lg transition"
+                  >
+                    <FaShoppingCart />
+                  </button>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {/* View All Button */}
+      {products.length > 0 && (
+        <div className="text-center mt-12">
+          <Link
+            to="/product"
+            className="inline-block bg-amber-500 hover:bg-amber-600 text-gray-900 px-8 py-4 rounded-xl font-bold transition text-lg"
+          >
+            View All Products
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
