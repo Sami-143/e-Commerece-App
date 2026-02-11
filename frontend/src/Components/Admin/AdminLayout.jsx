@@ -11,7 +11,8 @@ import {
   FiLogOut,
   FiMenu,
   FiX,
-  FiMessageCircle
+  FiMessageCircle,
+  FiRefreshCw
 } from 'react-icons/fi';
 import { useState } from 'react';
 
@@ -26,6 +27,7 @@ const AdminLayout = ({ children }) => {
     { path: '/admin/products', icon: FiPackage, label: 'Products' },
     { path: '/admin/product/new', icon: FiPlusCircle, label: 'Create Product' },
     { path: '/admin/orders', icon: FiShoppingBag, label: 'Orders' },
+    { path: '/admin/returns', icon: FiRefreshCw, label: 'Returns' },
     { path: '/admin/users', icon: FiUsers, label: 'Users' },
     { path: '/admin/chats', icon: FiMessageCircle, label: 'Support Chats' },
   ];

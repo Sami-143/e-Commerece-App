@@ -5,13 +5,26 @@ const API = axios.create({
   withCredentials: true,
 });
 
-// User endpoints
-export const getMyChat = () => API.get('/chat/my');
-export const sendMessage = (message) => API.post('/chat/send', { message });
+// Customer endpoints
+export const getOrCreateConversation = (orderId = null) => {
+  const params = orderId ? { orderId } : {};
+  return API.get('/chat/conversation', { params });
+};
+
+export const sendMessage = (conversationId, messageText) =>
+  API.post('/chat/message', { conversationId, messageText });
+
+export const markMessagesAsRead = (conversationId) =>
+  API.put(`/chat/conversation/${conversationId}/read`);
+
+export const reopenConversation = (conversationId) =>
+  API.put(`/chat/conversation/${conversationId}/reopen`);
 
 // Admin endpoints
-export const getAllChats = () => API.get('/admin/chats');
-export const getChatById = (id) => API.get(`/admin/chat/${id}`);
-export const adminReply = (id, message) => API.post(`/admin/chat/${id}/reply`, { message });
-export const markAsRead = (id) => API.put(`/admin/chat/${id}/read`);
-export const closeChat = (id) => API.put(`/admin/chat/${id}/close`);
+export const getAllConversations = () => API.get('/admin/conversations');
+
+export const getConversationMessages = (conversationId) =>
+  API.get(`/admin/conversation/${conversationId}/messages`);
+
+export const closeConversation = (conversationId) =>
+  API.put(`/admin/conversation/${conversationId}/close`);

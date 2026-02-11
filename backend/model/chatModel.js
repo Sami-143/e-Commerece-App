@@ -1,46 +1,36 @@
 const mongoose = require("mongoose");
 
-const messageSchema = new mongoose.Schema({
-  sender: {
-    type: String,
-    enum: ["user", "admin"],
-    required: true,
-  },
-  message: {
-    type: String,
-    required: true,
-  },
-  timestamp: {
-    type: Date,
-    default: Date.now,
-  },
-  read: {
-    type: Boolean,
-    default: false,
-  },
-});
-
-const chatSchema = new mongoose.Schema({
-  user: {
+// Conversation Schema
+const conversationSchema = new mongoose.Schema({
+  customer: {
     type: mongoose.Schema.ObjectId,
     ref: "User",
     required: true,
   },
-  userName: {
+  customerName: {
     type: String,
     required: true,
   },
-  userEmail: {
+  customerEmail: {
     type: String,
     required: true,
   },
-  messages: [messageSchema],
+  admin: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    default: null,
+  },
+  order: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Order",
+    default: null,
+  },
   status: {
     type: String,
-    enum: ["active", "closed"],
-    default: "active",
+    enum: ["open", "closed"],
+    default: "open",
   },
-  lastMessage: {
+  lastMessageAt: {
     type: Date,
     default: Date.now,
   },
@@ -50,12 +40,45 @@ const chatSchema = new mongoose.Schema({
   },
 });
 
-// Update lastMessage on new message
-chatSchema.pre("save", function (next) {
-  if (this.messages.length > 0) {
-    this.lastMessage = this.messages[this.messages.length - 1].timestamp;
-  }
-  next();
+// Message Schema
+const messageSchema = new mongoose.Schema({
+  conversation: {
+    type: mongoose.Schema.ObjectId,
+    ref: "Conversation",
+    required: true,
+    index: true,
+  },
+  sender: {
+    type: mongoose.Schema.ObjectId,
+    ref: "User",
+    required: true,
+  },
+  senderRole: {
+    type: String,
+    enum: ["customer", "admin"],
+    required: true,
+  },
+  messageText: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  isRead: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-module.exports = mongoose.model("Chat", chatSchema);
+// Index for faster queries
+conversationSchema.index({ customer: 1, status: 1 });
+conversationSchema.index({ order: 1 });
+messageSchema.index({ conversation: 1, createdAt: 1 });
+
+const Conversation = mongoose.model("Conversation", conversationSchema);
+const Message = mongoose.model("Message", messageSchema);
+
+module.exports = { Conversation, Message };

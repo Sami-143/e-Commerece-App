@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useParams, Link } from 'react-router-dom';
 import { getOrderDetails } from '../../Redux/orderSlice';
-import { FiArrowLeft, FiTruck, FiCheckCircle, FiClock } from 'react-icons/fi';
+import { FiArrowLeft, FiTruck, FiCheckCircle, FiClock, FiRefreshCw } from 'react-icons/fi';
+import ReturnRequestModal from '../Returns/ReturnRequestModal';
 
 const OrderDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { order, loading } = useSelector((state) => state.order);
+  const [selectedItemForReturn, setSelectedItemForReturn] = useState(null);
+  const [showReturnModal, setShowReturnModal] = useState(false);
 
   useEffect(() => {
     dispatch(getOrderDetails(id));
@@ -25,6 +28,35 @@ const OrderDetails = () => {
     }
   };
 
+  const isReturnEligible = (order) => {
+    // Check if order is delivered
+    if (order.paymentInfo?.orderStatus !== 'Delivered') {
+      return { eligible: false, reason: 'Only delivered orders can be returned' };
+    }
+
+    // Check if within return window (7 days)
+    const deliveredDate = new Date(order.paymentInfo?.deliveredAt);
+    const currentDate = new Date();
+    const daysSinceDelivery = Math.floor((currentDate - deliveredDate) / (1000 * 60 * 60 * 24));
+    const returnWindow = 7;
+
+    if (daysSinceDelivery > returnWindow) {
+      return { eligible: false, reason: `Return window expired (${returnWindow} days)` };
+    }
+
+    return { eligible: true, daysLeft: returnWindow - daysSinceDelivery };
+  };
+
+  const handleReturnRequest = (item) => {
+    setSelectedItemForReturn(item);
+    setShowReturnModal(true);
+  };
+
+  const handleReturnSuccess = () => {
+    // Refresh order details
+    dispatch(getOrderDetails(id));
+  };
+
   if (loading || !order) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center">
@@ -34,6 +66,7 @@ const OrderDetails = () => {
   }
 
   const statusStep = getStatusStep(order.paymentInfo?.orderStatus);
+  const returnEligibility = isReturnEligible(order);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950">
@@ -43,29 +76,46 @@ const OrderDetails = () => {
           <Link to="/" className="text-2xl font-bold text-amber-400">
             ShopEasy
           </Link>
-          <Link
-            to="/orders"
-            className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
-          >
-            <FiArrowLeft />
-            Back to Orders
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              to="/returns"
+              className="flex items-center gap-2 text-gray-400 hover:text-amber-400 transition-colors"
+            >
+              <FiRefreshCw size={18} />
+              My Returns
+            </Link>
+            <Link
+              to="/orders"
+              className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors"
+            >
+              <FiArrowLeft />
+              Back to Orders
+            </Link>
+          </div>
         </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-8">
         {/* Order Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white">
-            Order #{order._id?.slice(-8).toUpperCase()}
-          </h1>
-          <p className="text-gray-400 mt-1">
-            Placed on {new Date(order.paymentInfo?.paidAt).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric',
-            })}
-          </p>
+        <div className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-3xl font-bold text-white">
+              Order #{order._id?.slice(-8).toUpperCase()}
+            </h1>
+            <p className="text-gray-400 mt-1">
+              Placed on {new Date(order.paymentInfo?.paidAt).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </p>
+          </div>
+          {returnEligibility.eligible && (
+            <div className="bg-green-500/10 border border-green-500/30 rounded-lg px-4 py-2">
+              <p className="text-green-400 text-sm font-semibold">Return Available</p>
+              <p className="text-gray-400 text-xs">{returnEligibility.daysLeft} days left</p>
+            </div>
+          )}
         </div>
 
         {/* Order Status Timeline */}
@@ -118,6 +168,15 @@ const OrderDetails = () => {
                       <p className="text-gray-400 text-sm mt-1">
                         ${item.price?.toFixed(2)} × {item.quantity}
                       </p>
+                      {returnEligibility.eligible && (
+                        <button
+                          onClick={() => handleReturnRequest(item)}
+                          className="mt-2 flex items-center gap-2 text-amber-400 text-sm hover:text-amber-300 transition-colors"
+                        >
+                          <FiRefreshCw size={14} />
+                          Request Return
+                        </button>
+                      )}
                     </div>
                     <p className="text-amber-400 font-bold">
                       ${(item.price * item.quantity).toFixed(2)}
@@ -171,6 +230,19 @@ const OrderDetails = () => {
           </div>
         </div>
       </main>
+
+      {/* Return Request Modal */}
+      {showReturnModal && selectedItemForReturn && (
+        <ReturnRequestModal
+          order={order}
+          orderItem={selectedItemForReturn}
+          onClose={() => {
+            setShowReturnModal(false);
+            setSelectedItemForReturn(null);
+          }}
+          onSuccess={handleReturnSuccess}
+        />
+      )}
     </div>
   );
 };

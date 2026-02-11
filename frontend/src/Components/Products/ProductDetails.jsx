@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchProductDetails, clearProductDetails } from '../../Redux/productSlice';
 import { addToCart } from '../../Redux/cartSlice';
 import ReactStars from 'react-rating-stars-component';
@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 const ProductDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { product, loading, error } = useSelector((state) => state.products);
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
@@ -36,7 +37,12 @@ const ProductDetails = () => {
       stock: product.Stock,
       quantity,
     }));
-    toast.success(`${quantity} item(s) added to cart`);
+    toast.success(`${quantity} item(s) added to cart - Redirecting to checkout...`);
+    
+    // Navigate to cart/checkout page after a brief delay
+    setTimeout(() => {
+      navigate('/cart');
+    }, 1000);
   };
 
   const incrementQty = () => {

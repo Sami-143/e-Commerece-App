@@ -1,40 +1,43 @@
 const express = require("express");
 const {
-  getMyChat,
+  getOrCreateConversation,
   sendMessage,
-  getAllChats,
-  getChatById,
-  adminReply,
-  markAsRead,
-  closeChat,
+  getAllConversations,
+  getConversationMessages,
+  markMessagesAsRead,
+  closeConversation,
+  reopenConversation,
 } = require("../controllers/chatController");
 const { isAuthenticatedUser, authorizedRoles } = require("../middleware/auth");
 
 const router = express.Router();
 
-// User routes
-router.route("/chat/my").get(isAuthenticatedUser, getMyChat);
-router.route("/chat/send").post(isAuthenticatedUser, sendMessage);
+// Customer routes
+router
+  .route("/chat/conversation")
+  .get(isAuthenticatedUser, getOrCreateConversation);
+
+router.route("/chat/message").post(isAuthenticatedUser, sendMessage);
+
+router
+  .route("/chat/conversation/:conversationId/read")
+  .put(isAuthenticatedUser, markMessagesAsRead);
+
+router
+  .route("/chat/conversation/:conversationId/reopen")
+  .put(isAuthenticatedUser, reopenConversation);
 
 // Admin routes
 router
-  .route("/admin/chats")
-  .get(isAuthenticatedUser, authorizedRoles("admin"), getAllChats);
+  .route("/admin/conversations")
+  .get(isAuthenticatedUser, authorizedRoles("admin"), getAllConversations);
 
 router
-  .route("/admin/chat/:id")
-  .get(isAuthenticatedUser, authorizedRoles("admin"), getChatById);
+  .route("/admin/conversation/:conversationId/messages")
+  .get(isAuthenticatedUser, authorizedRoles("admin"), getConversationMessages);
 
 router
-  .route("/admin/chat/:id/reply")
-  .post(isAuthenticatedUser, authorizedRoles("admin"), adminReply);
-
-router
-  .route("/admin/chat/:id/read")
-  .put(isAuthenticatedUser, authorizedRoles("admin"), markAsRead);
-
-router
-  .route("/admin/chat/:id/close")
-  .put(isAuthenticatedUser, authorizedRoles("admin"), closeChat);
+  .route("/admin/conversation/:conversationId/close")
+  .put(isAuthenticatedUser, authorizedRoles("admin"), closeConversation);
 
 module.exports = router;

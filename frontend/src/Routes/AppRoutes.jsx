@@ -32,6 +32,10 @@ import AdminOrderDetails from '../Components/Admin/AdminOrderDetails';
 import AdminUserList from '../Components/Admin/AdminUserList';
 import EditUser from '../Components/Admin/EditUser';
 import AdminChatDashboard from '../Components/Admin/AdminChatDashboard';
+import AdminReturnsManagement from '../Components/Admin/AdminReturnsManagement';
+
+// Customer Return Components
+import MyReturns from '../Components/Returns/MyReturns';
 
 const AppRoutes = () => {
     return (
@@ -60,6 +64,7 @@ const AppRoutes = () => {
                 <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
                 <Route path="/orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
                 <Route path="/order/:id" element={<ProtectedRoute><OrderDetails /></ProtectedRoute>} />
+                <Route path="/returns" element={<ProtectedRoute><MyReturns /></ProtectedRoute>} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
@@ -68,6 +73,7 @@ const AppRoutes = () => {
                 <Route path="/admin/product/edit/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
                 <Route path="/admin/orders" element={<AdminRoute><AdminOrderList /></AdminRoute>} />
                 <Route path="/admin/order/:id" element={<AdminRoute><AdminOrderDetails /></AdminRoute>} />
+                <Route path="/admin/returns" element={<AdminRoute><AdminReturnsManagement /></AdminRoute>} />
                 <Route path="/admin/users" element={<AdminRoute><AdminUserList /></AdminRoute>} />
                 <Route path="/admin/user/edit/:id" element={<AdminRoute><EditUser /></AdminRoute>} />
                 <Route path="/admin/chats" element={<AdminRoute><AdminChatDashboard /></AdminRoute>} />
