@@ -9,10 +9,7 @@ const connectDatabase = async () => {
   }
 
   try {
-    const db = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://samiullahglotar420:malikecomerceappsami@ecommerce.jkzlt.mongodb.net/', {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const db = await mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://samiullahglotar420:malikecomerceappsami@ecommerce.jkzlt.mongodb.net/');
     isConnected = db.connections[0].readyState === 1;
     console.log('Connected to MongoDB Atlas');
   } catch (err) {

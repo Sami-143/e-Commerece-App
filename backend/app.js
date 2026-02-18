@@ -27,6 +27,11 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 
+// Root route
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'E-Commerce API is running' });
+});
+
 // Import Routes
 const product = require("./routes/productsRoute");
 const user = require("./routes/userRoute");
