@@ -6,6 +6,7 @@ const cors = require("cors");
 // CORS setup - allow both localhost and production frontend
 const allowedOrigins = [
   'http://localhost:3000',
+  'https://e-commerece-app-ecru.vercel.app',
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
