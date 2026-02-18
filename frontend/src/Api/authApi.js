@@ -1,9 +1,4 @@
-import axios from 'axios';
-
-const API = axios.create({
-  baseURL: 'http://localhost:4000/api/v1', // update if different
-  withCredentials: true, // important for cookies
-});
+import API from './config';
 
 // Register new user (sends OTP)
 export const register = (userData) => API.post('/register', userData);

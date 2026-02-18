@@ -1,9 +1,4 @@
-import axios from 'axios';
-
-const API = axios.create({
-  baseURL: 'http://localhost:4000/api/v1',
-  withCredentials: true,
-});
+import API from './config';
 
 // Create new order
 export const createOrder = (orderData) => API.post('/order/new', orderData);

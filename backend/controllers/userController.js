@@ -141,9 +141,13 @@ exports.loginUser = catchAsyncError(async (req, res, next) => {
 // logout user 
 exports.logout = catchAsyncError(async (req, res, next) => {
 
+    const isProduction = process.env.NODE_ENV === 'production';
+
     res.cookie("token", null, {
         expires: new Date(Date.now()),
-        httpOnly: true//HTTPOnly cookies are website cookies marked with the HTTPOnly attribute, which prevents client-side scripts from capturing data stored on these cookies.
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
     })
     res.status(200).json({
         sucess: true,

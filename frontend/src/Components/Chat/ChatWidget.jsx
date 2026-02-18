@@ -25,7 +25,8 @@ const ChatWidget = () => {
   // Initialize socket connection
   useEffect(() => {
     if (isAuthenticated && user) {
-      const newSocket = io('http://localhost:4000', {
+      const socketUrl = process.env.REACT_APP_SOCKET_URL || 'http://localhost:4000';
+      const newSocket = io(socketUrl, {
         withCredentials: true,
       });
 

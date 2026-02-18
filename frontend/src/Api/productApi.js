@@ -1,9 +1,4 @@
-import axios from 'axios';
-
-const API = axios.create({
-  baseURL: 'http://localhost:4000/api/v1',
-  withCredentials: true,
-});
+import API from './config';
 
 // Get all products (with optional search, filter, pagination)
 export const getAllProducts = (keyword = '', page = 1, price = [0, 100000], category = '', ratings = 0) => {

@@ -20,16 +20,21 @@ connectDatabase();
 
 async function testSMTP() {
     const transporter = nodemailer.createTransport({
-        service: "gmail",
+        host: process.env.SMTP_HOST,
+        port: Number(process.env.SMTP_PORT) || 465,
+        secure: Number(process.env.SMTP_PORT) === 465,
         auth: {
             user: process.env.SMTP_MAIL,
             pass: process.env.SMTP_PASSWORD,
+        },
+        tls: {
+            rejectUnauthorized: false,
         },
     });
 
     transporter.verify((error) => {
         if (error) {
-            console.error("❌ SMTP Connection Failed:", error);
+            console.error("❌ SMTP Connection Failed:", error.message);
         } else {
             console.log("✅ SMTP Connected Successfully");
         }
